@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+* {
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family: 'Montserrat', sans-serif;
+}
+/* Limpiamos el fondo del body */
+body {
+    background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(0, 212, 255, 1) 100%);
+    margin: 0;
+    padding: 0;
+}
+
+/* Si prefieres un fondo degradado profesional, úsalo aquí en lugar del anterior */
+.fondo-degradado {
+    background: linear-gradient(135deg, #000428, #00c6ff);
+    min-height: 100vh;
+    padding: 50px 0;
+}
+
+/* Asegurar que las tarjetas resalten sobre el fondo */
+.card {
+    background-color: white !important;
+}
