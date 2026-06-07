@@ -1,0 +1,28 @@
+.sf-footer {
+    width: 100%;
+    margin-top: 0px;
+    padding: 20px 32px 18px;
+    background: #eff2f4ff;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    text-align: center;
+
+    /* Sombra profesional hacia arriba (Eje Y negativo) */
+    box-shadow: 0 -4px 20px -1px rgba(0, 0, 0, 0.01), 0 -2px 4px -1px rgba(0, 0, 0, 0.02);
+}
+
+.sf-footer__title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #01234dff;
+    margin-bottom: 15px;
+}
+
+.sf-footer__sub {
+    font-size: 0.75rem;
+    color: #8a96a8;
+}
+
+.sf-footer__sub span {
+    color: #b0bac8;
+    margin: 0 6px;
+}
