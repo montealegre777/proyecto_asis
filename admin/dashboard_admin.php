@@ -1,3 +1,14 @@
+<?php
+require_once __DIR__ . '/config/db.php';
+require_once __DIR__ . '/includes/funciones.php';
+
+$fechaSeleccionada = isset($_GET['fecha']) ? $_GET['fecha'] : date('Y-m-d');
+
+$areas       = obtenerAreas($pdo);
+$empleados   = obtenerEmpleados($pdo);
+$asistencias = obtenerAsistenciasPorFecha($pdo, $fechaSeleccionada);
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -11,36 +22,95 @@
 
     <div class="container my-5">
         <h1 class="titulo">Dashboard</h1>
-        
+
         <div class="row gx-4">
-            
-            <article class="col-md-8 content-box">
-              <div class="content-box">
-                <h2>Titulo de la caja</h2>
-                <p>Contenido de la caja</p>
-              </div>
-              
-              <div class="content-box">
-                <h2>Titulo de la caja</h2>
-                <p>Contenido de la caja</p>
-              </div> 
-              
-              <div class="content-box">
-                <h2>Titulo de la caja</h2>
-                <p>Contenido de la caja</p>
-              </div>  
-                
+
+            <article class="col-md-8">
+
+                <!-- Asistencias por fecha -->
+                <div class="content-box">
+                    <h2>Asistencias</h2>
+                    <form method="GET">
+                        <input type="date" name="fecha" value="<?= htmlspecialchars($fechaSeleccionada) ?>">
+                        <button type="submit">Filtrar</button>
+                    </form>
+                    <table class="table mt-3">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Documento</th>
+                                <th>Área</th>
+                                <th>Entrada</th>
+                                <th>Salida</th>
+                                <th>Horas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($asistencias)): ?>
+                                <tr><td colspan="6">Sin asistencias para esta fecha.</td></tr>
+                            <?php else: ?>
+                                <?php foreach ($asistencias as $a): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($a['nombre_completo']) ?></td>
+                                    <td><?= htmlspecialchars($a['documento']) ?></td>
+                                    <td><?= htmlspecialchars($a['area'] ?? '—') ?></td>
+                                    <td><?= date('H:i', strtotime($a['fecha_hora_entrada'])) ?></td>
+                                    <td><?= $a['fecha_hora_salida'] ? date('H:i', strtotime($a['fecha_hora_salida'])) : 'En curso' ?></td>
+                                    <td><?= $a['horas_trabajadas'] ? number_format($a['horas_trabajadas'], 2) . 'h' : '—' ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empleados -->
+                <div class="content-box">
+                    <h2>Empleados</h2>
+                    <table class="table mt-3">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Documento</th>
+                                <th>Área</th>
+                                <th>Tipo</th>
+                                <th>Registro</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($empleados)): ?>
+                                <tr><td colspan="5">No hay empleados registrados.</td></tr>
+                            <?php else: ?>
+                                <?php foreach ($empleados as $e): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($e['nombre_completo']) ?></td>
+                                    <td><?= htmlspecialchars($e['documento']) ?></td>
+                                    <td><?= htmlspecialchars($e['area'] ?? '—') ?></td>
+                                    <td><?= htmlspecialchars($e['tipo_usuario'] ?? '—') ?></td>
+                                    <td><?= isset($e['fecha_creacion']) ? date('d/m/Y', strtotime($e['fecha_creacion'])) : '—' ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
 
             </article>
 
+            <!-- Áreas -->
             <aside class="col-md-4 sidebar">
-                <h3>Menu lateral</h3>
+                <h3>Áreas</h3>
                 <ul>
-                    <li><a href="#">Link 1</a></li>
-                    <li><a href="#">Link 2</a></li>
+                    <?php if (empty($areas)): ?>
+                        <li>Sin áreas registradas.</li>
+                    <?php else: ?>
+                        <?php foreach ($areas as $area): ?>
+                            <li><?= htmlspecialchars($area['nombre']) ?></li>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </ul>
             </aside>
-            
+
         </div>
     </div>
 
