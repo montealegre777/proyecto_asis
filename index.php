@@ -8,18 +8,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Control de Asistencia</title>
     <link rel="stylesheet" href="../proyecto_asis/css/styles_index.css">
+    <link rel="stylesheet" href="../proyecto_asis/css/styles_footer.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
 
+    <!-- Encabezado principal -->
+    <header class="site-header">
+        <div class="site-header__inner">
+            <div class="site-header__brand">
+                <div class="site-header__logo">
+                    <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <div>
+                    <span class="site-header__name">Sistema de Asistencias</span>
+                    <span class="site-header__sub">Gestión de Personal</span>
+                </div>
+            </div>
+            <div class="site-header__date">
+                <i class="fa-regular fa-calendar" style="margin-right:6px;color:var(--cyan)"></i>
+                <?php echo date('d/m/Y'); ?>
+            </div>
+        </div>
+    </header>
+
     <div class="page-wrapper">
 
-        <!-- Header -->
-        <header class="header">
+        <!-- Título del cuerpo -->
+        <div class="body-header">
             <h1>Control de <span>Asistencia</span></h1>
             <p>Gestión eficiente de horarios, asistencia y administración del personal en tiempo real.</p>
-        </header>
+        </div>
 
         <!-- Tarjetas principales -->
         <div class="main-grid">
