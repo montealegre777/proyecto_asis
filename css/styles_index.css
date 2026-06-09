@@ -416,3 +416,26 @@ body::before {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+/* ── MENSAJE RESULTADO ── */
+.modal-mensaje {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 18px;
+}
+
+.modal-mensaje--ok {
+    background: rgba(0, 200, 81, 0.1);
+    border: 1px solid rgba(0, 200, 81, 0.35);
+    color: #00c851;
+}
+
+.modal-mensaje--error {
+    background: rgba(255, 77, 109, 0.1);
+    border: 1px solid rgba(255, 77, 109, 0.35);
+    color: #ff4d6d;
+}

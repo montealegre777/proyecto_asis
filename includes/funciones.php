@@ -1,51 +1,31 @@
 <?php
-// ============================================================
 // includes/funciones.php
-// Lógica de negocio: empleados, asistencias, reportes, áreas
-// Requiere: config/db.php incluido antes de este archivo
-// ============================================================
 
-// ============================================================
-// 1. ÁREAS
-// ============================================================
-
-/**
- * Retorna todas las áreas para llenar selects en formularios.
- */
+// ── ÁREAS ──
 function obtenerAreas($pdo) {
-    $stmt = $pdo->query("SELECT id, nombre FROM areas ORDER BY nombre ASC");
+    $stmt = $pdo->query("SELECT id_area, nom_area FROM area ORDER BY nom_area ASC");
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// ============================================================
-// 2. EMPLEADOS
-// ============================================================
-
-/**
- * Retorna todos los empleados con su área y tipo de usuario.
- */
+// ── EMPLEADOS ──
 function obtenerEmpleados($pdo) {
     $stmt = $pdo->query("
         SELECT u.documento, u.nombre_completo, u.fecha_creacion,
-               a.nombre AS area, t.nombre AS tipo_usuario
-        FROM usuarios u
-        LEFT JOIN areas a ON u.area_id = a.id
-        LEFT JOIN tipo_usuario t ON u.tipo_usuario_id = t.id
+               a.nom_area AS area, t.nom_tip AS tipo_usuario
+        FROM usuario u
+        LEFT JOIN area a ON u.id_area = a.id_area
+        LEFT JOIN type_user t ON u.id_tip_user = t.id_tip_user
         ORDER BY u.nombre_completo ASC
     ");
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-/**
- * Retorna un empleado por su documento.
- * Retorna false si no existe.
- */
 function obtenerEmpleadoPorId($pdo, $documento) {
     $stmt = $pdo->prepare("
-        SELECT u.*, a.nombre AS area, t.nombre AS tipo_usuario
-        FROM usuarios u
-        LEFT JOIN areas a ON u.area_id = a.id
-        LEFT JOIN tipo_usuario t ON u.tipo_usuario_id = t.id
+        SELECT u.*, a.nom_area AS area, t.nom_tip AS tipo_usuario
+        FROM usuario u
+        LEFT JOIN area a ON u.id_area = a.id_area
+        LEFT JOIN type_user t ON u.id_tip_user = t.id_tip_user
         WHERE u.documento = ?
         LIMIT 1
     ");
@@ -53,142 +33,93 @@ function obtenerEmpleadoPorId($pdo, $documento) {
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-/**
- * Crea un nuevo empleado.
- * El PIN y la contraseña se almacenan con password_hash().
- * Retorna true si se insertó correctamente, false si no.
- */
 function crearEmpleado($pdo, $datos) {
-    // Verificar que el documento no exista
-    $check = $pdo->prepare("SELECT documento FROM usuarios WHERE documento = ? LIMIT 1");
+    $check = $pdo->prepare("SELECT documento FROM usuario WHERE documento = ? LIMIT 1");
     $check->execute([$datos['documento']]);
-    if ($check->fetch()) {
-        return false; // Documento ya registrado
-    }
+    if ($check->fetch()) return false;
 
     $stmt = $pdo->prepare("
-        INSERT INTO usuarios (documento, pin, password, nombre_completo, tipo_usuario_id, area_id, fecha_creacion)
-        VALUES (?, ?, ?, ?, ?, ?, NOW())
+        INSERT INTO usuario (documento, pin, password, nombre_completo, id_tip_user, id_area, fecha_creacion)
+        VALUES (?, ?, ?, ?, ?, ?, CURDATE())
     ");
-
     return $stmt->execute([
         $datos['documento'],
-        password_hash($datos['pin'], PASSWORD_DEFAULT),
+        $datos['pin'],
         password_hash($datos['password'], PASSWORD_DEFAULT),
         $datos['nombre_completo'],
-        $datos['tipo_usuario_id'],
-        $datos['area_id']
+        $datos['id_tip_user'],
+        $datos['id_area']
     ]);
 }
 
-/**
- * Actualiza los datos de un empleado (sin modificar PIN ni contraseña).
- * Retorna true si se actualizó correctamente, false si no.
- */
 function actualizarEmpleado($pdo, $documento, $datos) {
     $stmt = $pdo->prepare("
-        UPDATE usuarios
-        SET nombre_completo = ?, area_id = ?, tipo_usuario_id = ?
+        UPDATE usuario SET nombre_completo = ?, id_area = ?, id_tip_user = ?
         WHERE documento = ?
     ");
-
     return $stmt->execute([
         $datos['nombre_completo'],
-        $datos['area_id'],
-        $datos['tipo_usuario_id'],
+        $datos['id_area'],
+        $datos['id_tip_user'],
         $documento
     ]);
 }
 
-/**
- * Elimina un empleado por su documento.
- * Las asistencias se manejan según ON DELETE de la BD.
- * Retorna true si se eliminó correctamente, false si no.
- */
 function eliminarEmpleado($pdo, $documento) {
-    $stmt = $pdo->prepare("DELETE FROM usuarios WHERE documento = ?");
+    $stmt = $pdo->prepare("DELETE FROM usuario WHERE documento = ?");
     return $stmt->execute([$documento]);
 }
 
-// ============================================================
-// 3. ASISTENCIAS (flujo desde index.php)
-// ============================================================
-
-/**
- * Busca un empleado activo por documento y verifica su PIN.
- * Retorna el array del empleado si es válido, false si no.
- */
+// ── ASISTENCIAS ──
 function registrarAsistencia($pdo, $documento, $pin) {
-    // Buscar empleado
     $stmt = $pdo->prepare("
-        SELECT u.*
-        FROM usuarios u
-        INNER JOIN tipo_usuario t ON u.tipo_usuario_id = t.id
-        WHERE u.documento = ? AND t.nombre = 'empleado'
+        SELECT u.* FROM usuario u
+        INNER JOIN type_user t ON u.id_tip_user = t.id_tip_user
+        WHERE u.documento = ? AND t.nom_tip = 'empleado'
         LIMIT 1
     ");
     $stmt->execute([$documento]);
     $empleado = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$empleado) {
+    if (!$empleado || (int)$pin !== (int)$empleado['pin']) {
         return ['ok' => false, 'mensaje' => 'Documento o PIN incorrecto.'];
     }
 
-    if (!password_verify($pin, $empleado['pin'])) {
-        return ['ok' => false, 'mensaje' => 'Documento o PIN incorrecto.'];
-    }
-
-    // Buscar si tiene registro abierto hoy (sin salida)
     $hoy = date('Y-m-d');
     $check = $pdo->prepare("
-        SELECT id FROM asistencias
-        WHERE usuario_documento = ?
-          AND DATE(fecha_hora_entrada) = ?
-          AND fecha_hora_salida IS NULL
+        SELECT id_asistencia FROM asistencias
+        WHERE id_empleado = ? AND DATE(fecha_entrada) = ? AND fecha_salida IS NULL
         LIMIT 1
     ");
     $check->execute([$empleado['documento'], $hoy]);
-    $registroAbierto = $check->fetch(PDO::FETCH_ASSOC);
+    $abierto = $check->fetch(PDO::FETCH_ASSOC);
 
-    if (!$registroAbierto) {
-        // Registrar entrada
-        $insert = $pdo->prepare("
-            INSERT INTO asistencias (usuario_documento, fecha_hora_entrada)
-            VALUES (?, NOW())
-        ");
-        $insert->execute([$empleado['documento']]);
+    if (!$abierto) {
+        $pdo->prepare("INSERT INTO asistencias (id_empleado, fecha_entrada) VALUES (?, NOW())")
+            ->execute([$empleado['documento']]);
         return ['ok' => true, 'mensaje' => 'Entrada registrada correctamente.'];
     } else {
-        // Registrar salida y calcular horas trabajadas
-        $update = $pdo->prepare("
+        $pdo->prepare("
             UPDATE asistencias
-            SET fecha_hora_salida = NOW(),
-                horas_trabajadas = TIMESTAMPDIFF(MINUTE, fecha_hora_entrada, NOW()) / 60
-            WHERE id = ?
-        ");
-        $update->execute([$registroAbierto['id']]);
+            SET fecha_salida = NOW(),
+                horas_trabajadas = TIMESTAMPDIFF(MINUTE, fecha_entrada, NOW()) / 60
+            WHERE id_asistencia = ?
+        ")->execute([$abierto['id_asistencia']]);
         return ['ok' => true, 'mensaje' => 'Salida registrada correctamente.'];
     }
 }
 
-// ============================================================
-// 4. REPORTES
-// ============================================================
-
-/**
- * Retorna todas las asistencias de una fecha específica (YYYY-MM-DD).
- * Incluye nombre del empleado y área.
- */
+// ── REPORTES ──
 function obtenerAsistenciasPorFecha($pdo, $fecha) {
     $stmt = $pdo->prepare("
-        SELECT u.nombre_completo, u.documento, a.nombre AS area,
-               as2.fecha_hora_entrada, as2.fecha_hora_salida,
-               ROUND(as2.horas_trabajadas, 2) AS horas_trabajadas
-        FROM asistencias as2
-        INNER JOIN usuarios u ON as2.usuario_documento = u.documento
-        LEFT JOIN areas a ON u.area_id = a.id
-        WHERE DATE(as2.fecha_hora_entrada) = ?
-        ORDER BY as2.fecha_hora_entrada ASC
+        SELECT u.nombre_completo, u.documento, a.nom_area AS area,
+               ast.fecha_entrada, ast.fecha_salida,
+               ROUND(ast.horas_trabajadas, 2) AS horas_trabajadas
+        FROM asistencias ast
+        INNER JOIN usuario u ON ast.id_empleado = u.documento
+        LEFT JOIN area a ON u.id_area = a.id_area
+        WHERE DATE(ast.fecha_entrada) = ?
+        ORDER BY ast.fecha_entrada ASC
     ");
     $stmt->execute([$fecha]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);

@@ -1,5 +1,23 @@
-<?php session_start(); ?>
+<?php
+session_start();
+require_once 'config/db.php';
+require_once 'includes/funciones.php';
 
+$mensaje = '';
+$tipo_mensaje = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $db  = new Database();
+    $pdo = $db->conectar();
+
+    $documento = $_POST['documento'] ?? '';
+    $pin       = $_POST['pin'] ?? '';
+
+    $resultado    = registrarAsistencia($pdo, $documento, $pin);
+    $mensaje      = htmlspecialchars($resultado['mensaje']);
+    $tipo_mensaje = $resultado['ok'] ? 'ok' : 'error';
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -7,14 +25,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Control de Asistencia</title>
-    <link rel="stylesheet" href="../proyecto_asis/css/styles_index.css">
-    <link rel="stylesheet" href="../proyecto_asis/css/styles_footer.css">
+    <link rel="stylesheet" href="css/styles_index.css">
+    <link rel="stylesheet" href="css/styles_footer.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
 
-    <!-- Encabezado principal -->
     <header class="site-header">
         <div class="site-header__inner">
             <div class="site-header__brand">
@@ -35,13 +52,11 @@
 
     <div class="page-wrapper">
 
-        <!-- Título del cuerpo -->
         <div class="body-header">
             <h1>Control de <span>Asistencia</span></h1>
             <p>Gestión eficiente de horarios, asistencia y administración del personal en tiempo real.</p>
         </div>
 
-        <!-- Tarjetas principales -->
         <div class="main-grid">
 
             <div class="main-card">
@@ -69,7 +84,6 @@
 
         </div>
 
-        <!-- Info cards -->
         <div class="info-grid">
 
             <div class="info-card">
@@ -109,30 +123,41 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
+
+            <?php if ($mensaje): ?>
+            <div class="modal-mensaje modal-mensaje--<?php echo $tipo_mensaje; ?>">
+                <i
+                    class="fa-solid <?php echo $tipo_mensaje === 'ok' ? 'fa-circle-check' : 'fa-circle-exclamation'; ?>"></i>
+                <?php echo $mensaje; ?>
+            </div>
+            <?php endif; ?>
+
             <form method="POST">
                 <div class="form-group">
                     <label>Documento</label>
-                    <input type="number" name="documento" required>
+                    <input type="number" name="documento" placeholder="Número de documento" required>
                 </div>
                 <div class="form-group">
                     <label>PIN</label>
-                    <input type="password" name="pin" required>
-                </div>
-                <div class="form-group">
-                    <label>Contraseña</label>
-                    <input type="password" name="password" required>
+                    <input type="password" name="pin" placeholder="4 dígitos" maxlength="4" required>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" name="entrada" class="btn-entrada">
+                    <button type="submit" name="accion" value="entrada" class="btn-entrada">
                         <i class="fa-solid fa-arrow-right-to-bracket" style="margin-right:6px"></i>Entrada
                     </button>
-                    <button type="submit" name="salida" class="btn-salida">
+                    <button type="submit" name="accion" value="salida" class="btn-salida">
                         <i class="fa-solid fa-arrow-right-from-bracket" style="margin-right:6px"></i>Salida
                     </button>
                 </div>
             </form>
         </div>
     </div>
+
+    <?php if ($mensaje): ?>
+    <script>
+    document.getElementById('modalAsistencia').classList.add('active');
+    </script>
+    <?php endif; ?>
 
     <?php include 'includes/footer.php'; ?>
 

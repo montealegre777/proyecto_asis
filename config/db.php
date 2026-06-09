@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 
 class Database
 {
-    private $hostname = "localhost";
+    private $hostname = "127.0.0.1";
     private $database = "proyecto_asistencia";
     private $username = "root";
     private $password = "";
