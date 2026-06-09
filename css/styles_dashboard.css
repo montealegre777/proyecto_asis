@@ -71,3 +71,64 @@ body {
         margin-top: 15px;
     }
 }
+
+.navbar {
+    background-color: rgba(2, 0, 36, 0.75) !important;
+}
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+.container.my-5 {
+    flex: 1;
+}
+/* Barra de acciones admin */
+.admin-toolbar {
+    background: rgba(2, 0, 36, 0.85);
+    border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.admin-toolbar__inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 8px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.admin-toolbar__left,
+.admin-toolbar__right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.admin-toolbar__link {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    transition: color .2s;
+}
+
+.admin-toolbar__link:hover,
+.admin-toolbar__link.active {
+    color: #00d4ff;
+}
+
+.admin-toolbar__user {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+}
+
+.admin-toolbar__logout {
+    font-size: 13px;
+    color: #ff4d4d;
+    text-decoration: none;
+    transition: opacity .2s;
+}
+
+.admin-toolbar__logout:hover {
+    opacity: 0.8;
+}

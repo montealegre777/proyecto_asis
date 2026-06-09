@@ -134,18 +134,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <form method="POST">
                 <div class="form-group">
-                    <label>Documento</label>
+                    <label>Documento de Identidad</label>
                     <input type="number" name="documento" placeholder="Número de documento" required>
                 </div>
                 <div class="form-group">
-                    <label>PIN</label>
-                    <input type="password" name="pin" placeholder="4 dígitos" maxlength="4" required>
+                    <label>PIN de Acceso</label>
+                    <input type="password" name="pin" placeholder="4 dígitos" maxlength="4" pattern="\d{4}"
+                        title="El PIN debe ser de 4 números" required inputmode="numeric">
                 </div>
-                <div class="form-actions">
-                    <button type="submit" name="accion" value="entrada" class="btn-entrada">
+
+                <div class="form-actions" style="display: flex; gap: 10px;">
+                    <button type="submit" name="accion" value="entrada" class="btn-entrada"
+                        style="flex: 1; display: flex; justify-content: center; align-items: center; padding: 12px 0;">
                         <i class="fa-solid fa-arrow-right-to-bracket" style="margin-right:6px"></i>Entrada
                     </button>
-                    <button type="submit" name="accion" value="salida" class="btn-salida">
+                    <button type="submit" name="accion" value="salida" class="btn-salida"
+                        style="flex: 1; display: flex; justify-content: center; align-items: center; padding: 12px 0;">
                         <i class="fa-solid fa-arrow-right-from-bracket" style="margin-right:6px"></i>Salida
                     </button>
                 </div>
