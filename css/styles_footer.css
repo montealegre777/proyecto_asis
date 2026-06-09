@@ -7,8 +7,6 @@
     background: #eff2f4ff;
     font-family: 'Segoe UI', system-ui, sans-serif;
     text-align: center;
-
-    /* Sombra profesional hacia arriba (Eje Y negativo) */
     box-shadow: 0 -4px 20px -1px rgba(0, 0, 0, 0.01), 0 -2px 4px -1px rgba(0, 0, 0, 0.02);
 }
 
