@@ -1,0 +1,231 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap');
+
+/* ── ENCABEZADO ── */
+.site-header {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  background: rgba(2, 0, 36, 0.75);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.25);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.site-header__inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.site-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.site-header__logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #00d4ff22, #020024);
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #00d4ff;
+  box-shadow: 0 0 14px rgba(0, 212, 255, 0.2);
+}
+
+.site-header__name {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+.site-header__sub {
+  display: block;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.site-header__date {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(0, 212, 255, 1) 100%);
+}
+
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 79px);
+  width: 100%;
+  padding: 20px;
+}
+
+.login-box {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background: transparent;
+  border-radius: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 40px;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+h2 {
+  font-size: 2em;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+form {
+  width: 100%;
+}
+
+.input-box {
+  position: relative;
+  width: 100%;
+  margin: 30px 0;
+  border-bottom: 1px solid #fff;
+}
+
+.input-box label {
+  position: absolute;
+  top: 50%;
+  left: 5px;
+  transform: translateY(-50%);
+  font-size: 1em;
+  color: #fff;
+  pointer-events: none;
+  transition: 0.4s;
+}
+
+.input-box input:focus ~ label,
+.input-box input:valid ~ label {
+  top: -5px;
+  font-size: 0.8em;
+}
+
+.input-box input {
+  width: 100%;
+  height: 50px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 1em;
+  color: #fff;
+  padding: 0 35px 0 5px;
+}
+
+.input-box .icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  color: #fff;
+  transform: translateY(-50%);
+}
+
+/* ── BOTONES ── */
+.btn-login {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: linear-gradient(90deg, #00d4ff, #00a8cc);
+  color: #ffffff;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(0, 212, 255, 0.4);
+}
+
+.btn-login:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 24px rgba(0, 212, 255, 0.55);
+}
+
+.btn-back {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: transparent;
+  color: #ffffff;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.btn-back:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.03);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 500px) {
+  .wrapper {
+    padding: 0;
+    align-items: flex-start;
+  }
+
+  .login-box {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    border: none;
+    border-radius: 0;
+    padding: 72px 28px 40px;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  form {
+    width: 100%;
+    padding-top: 16px;
+  }
+
+  h2 {
+    font-size: 1.7em;
+  }
+
+  .input-box {
+    margin: 24px 0;
+  }
+}
