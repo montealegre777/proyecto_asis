@@ -428,6 +428,9 @@ body::before {
     margin-bottom: 18px;
 }
 
+
+
+
 .modal-mensaje--ok {
     background: rgba(0, 200, 81, 0.1);
     border: 1px solid rgba(0, 200, 81, 0.35);
