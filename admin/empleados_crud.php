@@ -379,8 +379,13 @@ if ($accion === 'editar_form') {
             </div>
             <?php endif; ?>
 
+
             <?php endif; ?>
         </div>
+
+        <?php endif; ?>
+    </div>
+
 </body>
 
 </html>
