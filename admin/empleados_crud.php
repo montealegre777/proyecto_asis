@@ -1,8 +1,23 @@
 <?php
+// ============================================================
+// admin/empleados_crud.php — Gestión completa de empleados
+// Responsabilidad: Crear, listar, editar y eliminar empleados,
+// además de mostrar el historial completo de asistencias.
+//
+// Patrón de navegación: el parámetro GET 'accion' determina
+// qué sección mostrar en pantalla. Valores posibles:
+//   'menu'       → pantalla principal con opciones
+//   'listar'     → tabla con todos los empleados
+//   'crear_form' → formulario para agregar nuevo empleado
+//   'editar_form'→ buscar empleado por documento y editarlo
+//   'reportes'   → historial completo de asistencias
+// ============================================================
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Control de acceso: solo admins (tipo 1) pueden entrar
 if (!isset($_SESSION['documento']) || intval($_SESSION['id_tip_user'] ?? 0) !== 1) {
     header("Location: ../index.php?error=acceso_denegado");
     exit();
@@ -11,25 +26,28 @@ if (!isset($_SESSION['documento']) || intval($_SESSION['id_tip_user'] ?? 0) !== 
 require_once dirname(__DIR__) . '/config/db.php';
 require_once dirname(__DIR__) . '/includes/funciones.php';
 
-$db = new Database();
+$db  = new Database();
 $pdo = $db->conectar();
 if (!$pdo) {
     die('<div class="alert alert-danger text-center mt-5"> Error de conexión a la base de datos</div>');
 }
 
+// Cargar tipos de usuario y áreas para los <select> de los formularios
 $tipos = $pdo->query("SELECT id_tip_user AS id, nom_tip AS nombre FROM type_user ORDER BY nom_tip ASC")->fetchAll(PDO::FETCH_ASSOC);
 $areas = obtenerAreas($pdo);
 
+// Leer la acción solicitada desde la URL (por defecto muestra el menú)
 $accion  = $_GET['accion'] ?? 'menu';
 $mensaje = '';
 
+// ── PROCESAMIENTO DE FORMULARIOS (cuando el usuario envía datos) ──
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
+    // Acción CREAR: nuevo empleado enviado desde el formulario crear_form
     if (isset($_POST['crear'])) {
         $pin_plano  = trim($_POST['pin']);
         $pass_plano = trim($_POST['password']);
-
-        $pass_hash = password_hash($pass_plano, PASSWORD_DEFAULT);
+        $pass_hash  = password_hash($pass_plano, PASSWORD_DEFAULT); // Cifrar contraseña antes de guardar
 
         $datos = [
             'documento'       => trim($_POST['documento']),
@@ -41,13 +59,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
 
         if ($datos['documento'] !== '' && $datos['nombre_completo'] !== '' && $pin_plano !== '' && $pass_plano !== '') {
-            $res     = crearEmpleado($pdo, $datos);
+            $res     = crearEmpleado($pdo, $datos); // La función verifica que el documento no exista
             $mensaje = $res ? "Empleado creado correctamente." : "Error al insertar el empleado.";
         } else {
             $mensaje = "Todos los campos obligatorios son requeridos.";
         }
     }
 
+    // Acción ACTUALIZAR: editar nombre, área y tipo de usuario de un empleado existente
     elseif (isset($_POST['actualizar'])) {
         $documento = trim($_POST['documento']);
         $datos = [
@@ -64,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // Acción ELIMINAR: borrar permanentemente un empleado por su documento
     elseif (isset($_POST['eliminar'])) {
         $documento = trim($_POST['documento']);
         if ($documento !== '') {
@@ -73,29 +93,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// ── CARGA DE DATOS SEGÚN LA ACCIÓN SOLICITADA ──
+
+// Si la acción es listar, traer todos los empleados de la BD
 if ($accion === 'listar') {
     $empleados = obtenerEmpleados($pdo);
 }
 
+// Si la acción es reportes, traer el historial completo de asistencias
 if ($accion === 'reportes') {
-    if (function_exists('obtenerReportesAsistencia')) {
-        $asistencias = obtenerReportesAsistencia($pdo);
-    } else {
-        $sqlAsistencia = "SELECT 
-                            a.id_asistencia,
-                            u.documento,
-                            u.nombre_completo,
-                            DATE(a.fecha_entrada) AS fecha,
-                            TIME(a.fecha_entrada) AS hora_entrada,
-                            TIME(a.fecha_salida)  AS hora_salida,
-                            a.horas_trabajadas
-                          FROM asistencias a
-                          INNER JOIN usuario u ON a.id_empleado = u.documento
-                          ORDER BY a.fecha_entrada DESC";
-        $asistencias = $pdo->query($sqlAsistencia)->fetchAll(PDO::FETCH_ASSOC);
-    }
+    $sqlAsistencia = "SELECT
+                        a.id_asistencia,
+                        u.documento,
+                        u.nombre_completo,
+                        DATE(a.fecha_entrada) AS fecha,
+                        TIME(a.fecha_entrada) AS hora_entrada,
+                        TIME(a.fecha_salida)  AS hora_salida,
+                        a.horas_trabajadas
+                      FROM asistencias a
+                      INNER JOIN usuario u ON a.id_empleado = u.documento
+                      ORDER BY a.fecha_entrada DESC";
+    $asistencias = $pdo->query($sqlAsistencia)->fetchAll(PDO::FETCH_ASSOC);
 }
 
+// Si la acción es editar, buscar los datos actuales del empleado por documento
 $empleado_editar = null;
 if ($accion === 'editar_form') {
     $id_buscar = trim($_GET['id'] ?? '');

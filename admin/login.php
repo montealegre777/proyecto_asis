@@ -1,14 +1,17 @@
 <?php
+// ============================================================
+// admin/login.php — Login exclusivo para administradores
+// ============================================================
+
 session_start();
 
-// 🔗 Ruta correcta para salir de la carpeta admin/ y entrar a config/
 require_once '../config/db.php';
+require_once '../includes/auth_admin.php';
 
 header("cache-control: no-store, no-cache, must-revalidate, max-age=0");
 header("cache-control: post-check=0, pre-check=0", false);
 header("pragma: no-cache");
 
-// 🛡️ Si ya hay una sesión activa de Admin, mandarlo directo al Dashboard
 if (isset($_SESSION['admin_id']) && intval($_SESSION['id_tip_user'] ?? 0) === 1) {
     header('Location: dashboard_admin.php');
     exit;
@@ -17,56 +20,34 @@ if (isset($_SESSION['admin_id']) && intval($_SESSION['id_tip_user'] ?? 0) === 1)
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $documento = trim($_POST['documento'] ?? '');
-    $pin       = trim($_POST['pin'] ?? ''); 
+    $pin       = trim($_POST['pin'] ?? '');
     $password  = $_POST['password'] ?? '';
 
     if (empty($documento) || empty($pin) || empty($password)) {
         $error = 'Por favor, rellene todos los campos';
+
+    } elseif (!validarPin($pin)) {
+        $error = 'El PIN debe ser exactamente 4 dígitos numéricos';
+
+    } elseif (!validarPassword($password)) {
+        $error = 'La contraseña debe tener exactamente 10 caracteres alfanuméricos';
+
     } else {
         try {
-            // 🕵️‍♂️ Detector automático de la conexión de tu db.php
-            if (!isset($pdo)) {
-                if (class_exists('Database')) {
-                    $db = new Database();
-                    $pdo = $db->conectar();
-                } else {
-                    // Busca cualquier variable PDO activa que haya creado tu db.php
-                    foreach ($GLOBALS as $key => $value) {
-                        if ($value instanceof PDO) {
-                            $pdo = $value;
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            if (!$pdo) throw new Exception('No se encontró la conexión a la base de datos.');
+            $db    = new Database();
+            $pdo   = $db->conectar();
 
-            // Consulta exacta a tus tablas reales (usuario y type_user)
-            $sql = "SELECT u.documento, u.nombre_completo, u.password, u.pin, u.id_tip_user, t.nom_tip
-                    FROM usuario u
-                    INNER JOIN type_user t ON u.id_tip_user = t.id_tip_user
-                    WHERE u.documento = ? AND u.id_tip_user = 1
-                    LIMIT 1";
-            
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$documento]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            $admin = verificarCredencialesAdmin($pdo, $documento, $pin, $password);
 
-            // 🛡️ TRIPLE VALIDACIÓN DEL FLUJO: Existe + PIN idéntico + Contraseña Hash
-            // 🔄 LÍNEA TEMPORAL DE DIAGNÓSTICO:
-            if ($user && intval($pin) === intval($user['pin']) && (password_verify($password, $user['password']) || $password === $user['password'])) {
-                
+            if ($admin) {
                 session_regenerate_id(true);
 
-                // Variables requeridas por tu flujo de negocio
-                $_SESSION['admin_id']    = $user['documento']; 
-                $_SESSION['documento']   = $user['documento'];
-                $_SESSION['nombres']     = $user['nombre_completo']; 
-                $_SESSION['id_tip_user'] = 1; 
+                $_SESSION['admin_id']    = $admin['documento'];
+                $_SESSION['documento']   = $admin['documento'];
+                $_SESSION['nombres']     = $admin['nombre_completo'];
+                $_SESSION['id_tip_user'] = 1;
                 $_SESSION['login_time']  = time();
 
-                // 🚀 REDIRECCIÓN SOLICITADA: Al estar en admin/login.php, apunta directo al dashboard en la misma carpeta
                 header('Location: dashboard_admin.php');
                 exit;
             } else {
@@ -74,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (Exception $e) {
             error_log("Login error: " . $e->getMessage());
-            $error = 'Error interno: ' . $e->getMessage(); // Quitar el . $e->getMessage() cuando ya funcione
+            $error = 'Error al conectar con la base de datos.';
         }
     }
 }

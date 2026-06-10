@@ -1,21 +1,31 @@
 <?php
+// ============================================================
+// index.php — Página principal (acceso público)
+// Responsabilidad: Permite a los empleados registrar entrada
+// o salida usando su documento y PIN de 4 dígitos.
+// También muestra la información institucional (misión, visión).
+// ============================================================
+
 session_start();
 require_once 'config/db.php';
 require_once 'includes/funciones.php';
 
-$mensaje = '';
+$mensaje      = '';
 $tipo_mensaje = '';
 
+// Solo procesa el formulario cuando el empleado envía sus datos (método POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db  = new Database();
     $pdo = $db->conectar();
 
+    // Obtener documento y PIN enviados desde el formulario modal
     $documento = $_POST['documento'] ?? '';
     $pin       = $_POST['pin'] ?? '';
 
+    // La función decide automáticamente si es entrada o salida según el estado en BD
     $resultado    = registrarAsistencia($pdo, $documento, $pin);
     $mensaje      = htmlspecialchars($resultado['mensaje']);
-    $tipo_mensaje = $resultado['ok'] ? 'ok' : 'error';
+    $tipo_mensaje = $resultado['ok'] ? 'ok' : 'error'; // 'ok' = verde, 'error' = rojo
 }
 ?>
 <!DOCTYPE html>
@@ -159,6 +169,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <?php if ($mensaje): ?>
     <script>
+    // Si PHP procesó el formulario y hay un mensaje, reabre el modal automáticamente
+    // para que el empleado vea la respuesta (éxito o error)
     document.getElementById('modalAsistencia').classList.add('active');
     </script>
     <?php endif; ?>
