@@ -1,21 +1,32 @@
 <?php
+// ============================================================
+// index.php — Página principal (acceso público)
+// Responsabilidad: Permite a los empleados registrar entrada
+// o salida usando su documento y PIN de 4 dígitos.
+// También muestra la información institucional (misión, visión).
+// ============================================================
+
 session_start();
 require_once 'config/db.php';
 require_once 'includes/funciones.php';
 
-$mensaje = '';
+$mensaje      = '';
 $tipo_mensaje = '';
 
+// Solo procesa el formulario cuando el empleado envía sus datos (método POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db  = new Database();
     $pdo = $db->conectar();
 
+    // Obtener documento y PIN enviados desde el formulario modal
     $documento = $_POST['documento'] ?? '';
     $pin       = $_POST['pin'] ?? '';
 
-    $resultado    = registrarAsistencia($pdo, $documento, $pin);
+    // Usar el botón presionado para determinar si es entrada o salida
+    $tipo         = $_POST['accion'] ?? 'entrada';
+    $resultado    = registrarAsistencia($pdo, $documento, $pin, $tipo);
     $mensaje      = htmlspecialchars($resultado['mensaje']);
-    $tipo_mensaje = $resultado['ok'] ? 'ok' : 'error';
+    $tipo_mensaje = $resultado['ok'] ? 'ok' : 'error'; // 'ok' = verde, 'error' = rojo
 }
 ?>
 <!DOCTYPE html>
@@ -134,18 +145,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <form method="POST">
                 <div class="form-group">
-                    <label>Documento</label>
-                    <input type="number" name="documento" placeholder="Número de documento" required>
+                    <label>Documento de Identidad</label>
+                    <input type="tel" name="documento" placeholder="Número de documento" required>
                 </div>
                 <div class="form-group">
-                    <label>PIN</label>
-                    <input type="password" name="pin" placeholder="4 dígitos" maxlength="4" required>
+                    <label>PIN de Acceso</label>
+                    <input type="password" name="pin" placeholder="4 dígitos" maxlength="4" pattern="\d{4}"
+                        title="El PIN debe ser de 4 números" required inputmode="numeric">
                 </div>
-                <div class="form-actions">
-                    <button type="submit" name="accion" value="entrada" class="btn-entrada">
+
+                <div class="form-actions" style="display: flex; gap: 10px;">
+                    <button type="submit" name="accion" value="entrada" class="btn-entrada"
+                        style="flex: 1; display: flex; justify-content: center; align-items: center; padding: 12px 0;">
                         <i class="fa-solid fa-arrow-right-to-bracket" style="margin-right:6px"></i>Entrada
                     </button>
-                    <button type="submit" name="accion" value="salida" class="btn-salida">
+                    <button type="submit" name="accion" value="salida" class="btn-salida"
+                        style="flex: 1; display: flex; justify-content: center; align-items: center; padding: 12px 0;">
                         <i class="fa-solid fa-arrow-right-from-bracket" style="margin-right:6px"></i>Salida
                     </button>
                 </div>
@@ -155,6 +170,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <?php if ($mensaje): ?>
     <script>
+    // Si PHP procesó el formulario y hay un mensaje, reabre el modal automáticamente
+    // para que el empleado vea la respuesta (éxito o error)
     document.getElementById('modalAsistencia').classList.add('active');
     </script>
     <?php endif; ?>

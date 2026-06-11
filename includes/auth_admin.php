@@ -1,7 +1,7 @@
 <?php
 // ============================================================
 // includes/auth_admin.php
-// Seguridad, validaciones y control de sesión administrador
+// Responsabilidad: Funciones de apoyo para seguridad.
 // ============================================================
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -34,10 +34,10 @@ function validarPassword($pass) {
 
 function verificarCredencialesAdmin($pdo, $documento, $pin, $password) {
     $stmt = $pdo->prepare("
-        SELECT u.*
+        SELECT u.documento, u.nombre_completo, u.password, u.pin, u.id_tip_user, t.nom_tip
         FROM usuario u
         INNER JOIN type_user t ON u.id_tip_user = t.id_tip_user
-        WHERE u.documento = ? AND t.nom_tip = 'administrador'
+        WHERE u.documento = ? AND u.id_tip_user = 1
         LIMIT 1
     ");
     $stmt->execute([$documento]);

@@ -1,7 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 class Database
 {
     private $hostname = "127.0.0.1";
@@ -18,9 +15,9 @@ class Database
             $dsn = "mysql:host={$this->hostname};dbname={$this->database};charset={$this->charset}";
            
             $options = [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_EMULATE_PREPARES => false,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, //Si ocurre un error SQL, lanza una excepción (PDOException)
+                PDO::ATTR_EMULATE_PREPARES => false, // previene inyección SQL
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC //Los resultados de las consultas llegan como array asociativo
             ];
 
             $pdo = new PDO($dsn, $this->username, $this->password, $options);
