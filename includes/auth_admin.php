@@ -4,7 +4,7 @@
 // Responsabilidad: Funciones de apoyo para seguridad.
 // ============================================================
 
-if (session_status() === PHP_SESSION_NONE) {
+if (session_status() === PHP_SESSION_NONE) {//iniciar una sesión únicamente si todavía no existe una sesión activa.
     session_start();
 }
 
@@ -21,7 +21,7 @@ function limpiar($dato) {
 // ============================================================
 
 function validarPin($pin) {
-    return preg_match('/^\d{4}$/', $pin);
+    return preg_match('/^\d{4}$/', $pin); //preg_match valida que el input cumpla con las condiciones 
 }
 
 function validarPassword($pass) {
@@ -36,7 +36,7 @@ function verificarCredencialesAdmin($pdo, $documento, $pin, $password) {
     $stmt = $pdo->prepare("
         SELECT u.documento, u.nombre_completo, u.password, u.pin, u.id_tip_user, t.nom_tip
         FROM usuario u
-        INNER JOIN type_user t ON u.id_tip_user = t.id_tip_user
+        INNER JOIN type_user t ON u.id_tip_user = t.id_tip_user       
         WHERE u.documento = ? AND u.id_tip_user = 1
         LIMIT 1
     ");
@@ -63,7 +63,9 @@ function verificarCredencialesAdmin($pdo, $documento, $pin, $password) {
 // ============================================================
 // 4. CONTROL DE ACCESO
 // ============================================================
-
+//Verificar que exista una sesión de administrador activa.
+// Si el usuario no ha iniciado sesión, se redirige al login
+// y se detiene la ejecución para proteger las páginas privadas.
 function requireAdmin() {
     if (!isset($_SESSION['admin_id'])) {
         header('Location: login.php');

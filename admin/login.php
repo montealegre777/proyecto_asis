@@ -11,13 +11,14 @@ require_once '../includes/auth_admin.php';
 header("cache-control: no-store, no-cache, must-revalidate, max-age=0");
 header("cache-control: post-check=0, pre-check=0", false);
 header("pragma: no-cache");
-
+// Esta condición verifica que el usuario haya iniciado sesión y que además sea administrador.
 if (isset($_SESSION['admin_id']) && intval($_SESSION['id_tip_user'] ?? 0) === 1) {
     header('Location: dashboard_admin.php');
     exit;
 }
 
 $error = '';
+//verifica el envio del formulario
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $documento = trim($_POST['documento'] ?? '');
     $pin       = trim($_POST['pin'] ?? '');
@@ -40,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $admin = verificarCredencialesAdmin($pdo, $documento, $pin, $password);
 
             if ($admin) {
-                session_regenerate_id(true);
+                session_regenerate_id(true);//Genera un nuevo identificador de sesión.
 
                 $_SESSION['admin_id']    = $admin['documento'];
                 $_SESSION['documento']   = $admin['documento'];

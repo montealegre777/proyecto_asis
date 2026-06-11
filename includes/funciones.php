@@ -17,14 +17,16 @@ function obtenerAreas($pdo) {
 
 // ── EMPLEADOS ──
 
-// Retorna todos los empleados con su área y tipo de usuario (usando JOINs)
+// Trae todos los empleados con su área y tipo de usuario.
+// LEFT JOIN garantiza que aparezcan aunque no tengan área o rol asignado.
+// ORDER BY ordena alfabéticamente por nombre.
 function obtenerEmpleados($pdo) {
     $stmt = $pdo->query("
-        SELECT u.documento, u.nombre_completo, u.fecha_creacion,
+        SELECT u.documento, u.nombre_completo, u.fecha_creacion,     
                a.nom_area AS area, t.nom_tip AS tipo_usuario
         FROM usuario u
-        LEFT JOIN area a ON u.id_area = a.id_area          -- une con la tabla de áreas
-        LEFT JOIN type_user t ON u.id_tip_user = t.id_tip_user  -- une con la tabla de roles
+        LEFT JOIN area a ON u.id_area = a.id_area        
+        LEFT JOIN type_user t ON u.id_tip_user = t.id_tip_user  
         ORDER BY u.nombre_completo ASC
     ");
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -33,11 +35,11 @@ function obtenerEmpleados($pdo) {
 // Busca un empleado específico por su número de documento
 function obtenerEmpleadoPorId($pdo, $documento) {
     $stmt = $pdo->prepare("
-        SELECT u.*, a.nom_area AS area, t.nom_tip AS tipo_usuario
+        SELECT u.*, a.nom_area AS area, t.nom_tip AS tipo_usuario        
         FROM usuario u
         LEFT JOIN area a ON u.id_area = a.id_area
-        LEFT JOIN type_user t ON u.id_tip_user = t.id_tip_user
-        WHERE u.documento = ?
+        LEFT JOIN type_user t ON u.id_tip_user = t.id_tip_user             
+        WHERE u.documento = ?                                               
         LIMIT 1
     ");
     $stmt->execute([$documento]);
@@ -127,7 +129,7 @@ function registrarAsistencia($pdo, $documento, $pin, $tipo = 'entrada') {
         $pdo->prepare("
             UPDATE asistencias
             SET fecha_salida = NOW(),
-                horas_trabajadas = TIMESTAMPDIFF(MINUTE, fecha_entrada, NOW()) / 60
+                horas_trabajadas = TIMESTAMPDIFF(MINUTE, fecha_entrada, NOW()) / 60  -- acá se hace el calculo de las horas con timestampdiff
             WHERE id_asistencia = ?
         ")->execute([$abierto['id_asistencia']]);
         return ['ok' => true, 'mensaje' => 'Salida registrada correctamente.'];

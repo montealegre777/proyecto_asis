@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'id_tip_user'     => $_POST['tipo_usuario_id'] !== '' ? intval($_POST['tipo_usuario_id']) : null,
             'id_area'         => $_POST['area_id']         !== '' ? intval($_POST['area_id'])         : null
         ];
-
+        //valida que los campos obligatorios tengan información antes de crear un empleado.
         if ($datos['documento'] !== '' && $datos['nombre_completo'] !== '' && $pin_plano !== '' && $pass_plano !== '') {
             $res     = crearEmpleado($pdo, $datos); // La función verifica que el documento no exista
             $mensaje = $res ? "Empleado creado correctamente." : "Error al insertar el empleado.";
@@ -147,7 +147,7 @@ if ($accion === 'editar_form') {
                 <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
                     style="width:50px;height:50px;font-size:1.2rem;font-weight:bold;">
                     <?php
-                    $iniciales = strtoupper(substr($_SESSION['nombre_completo'] ?? 'A', 0, 1));
+                    $iniciales = strtoupper(substr($_SESSION['nombre_completo'] ?? 'A', 0, 1));//obtener la primera letra del nombre del usuario en mayúscula
                     echo $iniciales;
                     ?>
                 </div>
@@ -211,6 +211,7 @@ if ($accion === 'editar_form') {
                         <th>Fecha Creación</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     <?php foreach ($empleados as $emp): ?>
                     <tr>
