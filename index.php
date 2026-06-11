@@ -145,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form method="POST">
                 <div class="form-group">
                     <label>Documento de Identidad</label>
-                    <input type="number" name="documento" placeholder="Número de documento" required>
+                    <input type="tel" name="documento" placeholder="Número de documento" required>
                 </div>
                 <div class="form-group">
                     <label>PIN de Acceso</label>

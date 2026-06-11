@@ -83,14 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Acción ELIMINAR: borrar permanentemente un empleado por su documento
-    elseif (isset($_POST['eliminar'])) {
-        $documento = trim($_POST['documento']);
-        if ($documento !== '') {
-            $res     = eliminarEmpleado($pdo, $documento);
-            $mensaje = $res ? "Empleado eliminado correctamente." : "Error al eliminar el empleado.";
-        }
-    }
+  
 }
 
 // ── CARGA DE DATOS SEGÚN LA ACCIÓN SOLICITADA ──

@@ -8,8 +8,8 @@
 
 session_start();
 
-// Control de acceso: si no hay sesión de admin activa, redirigir al login
-// Esto protege el dashboard de accesos no autorizados escribiendo la URL directamente
+// Esta condición verifica que el usuario haya iniciado sesión y que además sea administrador.
+// Si no cumple alguna de las dos condiciones, el sistema lo redirige al login para evitar accesos no autorizados.
 if (!isset($_SESSION['admin_id']) || intval($_SESSION['id_tip_user'] ?? 0) !== 1) {
     header('Location: login.php');
     exit;
@@ -21,7 +21,7 @@ require_once __DIR__ . '/../includes/funciones.php';
 $db  = new Database();
 $pdo = $db->conectar();
 
-// Si el admin no elige una fecha, se muestra el día actual por defecto
+// se muestra el día actual por defecto en el filtro pa buscar empleados
 $fechaSeleccionada = isset($_GET['fecha']) ? $_GET['fecha'] : date('Y-m-d');
 
 // Cargar los datos que necesita la vista: áreas, empleados y asistencias del día
