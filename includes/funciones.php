@@ -92,7 +92,7 @@ function eliminarEmpleado($pdo, $documento) {
 // Lógica de decisión automática:
 //   - Si el empleado NO tiene una entrada abierta hoy → registra ENTRADA
 //   - Si el empleado YA tiene entrada abierta hoy      → registra SALIDA y calcula horas
-function registrarAsistencia($pdo, $documento, $pin) {
+function registrarAsistencia($pdo, $documento, $pin, $tipo = 'entrada') {
 
     // Paso 1: Verificar que el documento pertenece a un empleado (no a un admin)
     $stmt = $pdo->prepare("
@@ -110,23 +110,20 @@ function registrarAsistencia($pdo, $documento, $pin) {
     }
 
     // Paso 3: Buscar si ya tiene una entrada abierta hoy (sin salida registrada)
-    $hoy = date('Y-m-d');
+    // Se usa CURDATE() de MySQL para evitar diferencias de zona horaria con PHP
     $check = $pdo->prepare("
         SELECT id_asistencia FROM asistencias
-        WHERE id_empleado = ? AND DATE(fecha_entrada) = ? AND fecha_salida IS NULL
+        WHERE id_empleado = ? AND DATE(fecha_entrada) = CURDATE() AND fecha_salida IS NULL
         LIMIT 1
     ");
-    $check->execute([$empleado['documento'], $hoy]);
+    $check->execute([$empleado['documento']]);
     $abierto = $check->fetch(PDO::FETCH_ASSOC);
 
-    // Paso 4: Decidir si es entrada o salida
-    if (!$abierto) {
-        // No hay entrada abierta → crear nuevo registro de ENTRADA
-        $pdo->prepare("INSERT INTO asistencias (id_empleado, fecha_entrada) VALUES (?, NOW())")
-            ->execute([$empleado['documento']]);
-        return ['ok' => true, 'mensaje' => 'Entrada registrada correctamente.'];
-    } else {
-        // Ya hay entrada abierta → cerrarla como SALIDA y calcular horas trabajadas
+    // Paso 4: Actuar según el botón presionado
+    if ($tipo === 'salida') {
+        if (!$abierto) {
+            return ['ok' => false, 'mensaje' => 'No tiene una entrada registrada hoy.'];
+        }
         $pdo->prepare("
             UPDATE asistencias
             SET fecha_salida = NOW(),
@@ -134,6 +131,13 @@ function registrarAsistencia($pdo, $documento, $pin) {
             WHERE id_asistencia = ?
         ")->execute([$abierto['id_asistencia']]);
         return ['ok' => true, 'mensaje' => 'Salida registrada correctamente.'];
+    } else {
+        if ($abierto) {
+            return ['ok' => false, 'mensaje' => 'Ya tiene una entrada registrada hoy. Use el botón Salida.'];
+        }
+        $pdo->prepare("INSERT INTO asistencias (id_empleado, fecha_entrada) VALUES (?, NOW())")
+            ->execute([$empleado['documento']]);
+        return ['ok' => true, 'mensaje' => 'Entrada registrada correctamente.'];
     }
 }
 

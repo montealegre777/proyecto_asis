@@ -22,8 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $documento = $_POST['documento'] ?? '';
     $pin       = $_POST['pin'] ?? '';
 
-    // La función decide automáticamente si es entrada o salida según el estado en BD
-    $resultado    = registrarAsistencia($pdo, $documento, $pin);
+    // Usar el botón presionado para determinar si es entrada o salida
+    $tipo         = $_POST['accion'] ?? 'entrada';
+    $resultado    = registrarAsistencia($pdo, $documento, $pin, $tipo);
     $mensaje      = htmlspecialchars($resultado['mensaje']);
     $tipo_mensaje = $resultado['ok'] ? 'ok' : 'error'; // 'ok' = verde, 'error' = rojo
 }
